@@ -5,88 +5,135 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: haroldsorel <marvin@42.fr>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/12 17:02:19 by haroldsorel       #+#    #+#             */
-/*   Updated: 2023/10/14 15:33:33 by haroldsorel      ###   ########.fr       */
+/*   Created: 2023/10/19 00:01:55 by haroldsorel       #+#    #+#             */
+/*   Updated: 2023/10/19 02:25:15 by haroldsorel      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "get_next_line.h"
 
-char	*get_rest(char	*s1)
+int	find_nl(char *str)
+{
+	int	i;
+
+	i = 0;
+	while (str[i] != '\0')
+	{
+		if (str[i] == '\n')
+			return (i);
+		i++;
+	}
+	return (-1);
+}
+
+
+char	*strjoin_free(char *line, char *buffer)
+{
+	char	*temp;
+
+	temp = line;
+	line = ft_strjoin(line, buffer);
+	if (line == NULL)
+		return (NULL);
+	free(temp);
+	return (line);
+}
+
+
+char	*line_rest(char *buffer)
 {
 	int		i;
-	char	*s2;
+	int		j;
+	char	*line;
 
 	i = 0;
-	while (s1[i] != '\n')
+	while (buffer[i] && buffer[i] != '\n')
 		i++;
-	s2 = malloc(i + 10);
+	if (!buffer[i])
+	{
+		free(buffer);
+		return (NULL);
+	}
+	line = ft_calloc((ft_strlen(buffer) - i + 1), sizeof(char));
+	i++;
+	j = 0;
+	while (buffer[i])
+		line[j++] = buffer[i++];
+	free(buffer);
+	return (line);	
+}
+
+char	*line_trimmer(char *line)
+{
+	char	*res;
+	int		nl_index;
+	int		i;
+
+	nl_index = find_nl(line);
 	i = 0;
-	while (s1[i] != '\n')
+	if (nl_index == -1)
+		return (line);
+	res = malloc(nl_index + 2);
+	while (i <= nl_index)
 	{
-		s2[i] = s1[i];
+		res[i] = line[i];
 		i++;
 	}
-	s2[i++] = '\n';
-	s2[i] = '\0';
-	return (s2);
+	res[i] = '\0';
+	return (res);
 }
 
-int	fill_buffer(int fd, char *buffer)
-{
-	ft_bzero(buffer, BUFFER_SIZE + 1);
-	if (read(fd, buffer, BUFFER_SIZE) > 0)
-		return (0);
-	else
-		return (-1);
-}
 
-char	*fill_line(int fd, char *line, char *buffer)
+char	*line_creator(int fd, char *line)
 {
-	char	*rest;
-	int		bytes;
+	char	buffer[BUFFER_SIZE + 1];
+	int	bytes;
 
-	if (buffer == NULL)
-		return (NULL);
-	if (buffer[0] != '\0')
+	bytes = 1;
+	if (line == NULL)
 	{
-		rest = ft_strchr(buffer, '\n');
-		rest++;
-		line = ft_strjoin(line, rest);
+		line = malloc(1);
+		if (line == NULL)
+			return (NULL);
+		line[0] = '\0';
 	}
-	bytes = fill_buffer(fd, buffer);
-	while ((bytes == 0) && ft_strchr(buffer, '\n') == NULL)
+	while (bytes != 0)
 	{
-		line = ft_strjoin(line, buffer);
-		bytes = fill_buffer(fd, buffer);
+		bytes = read(fd, buffer, BUFFER_SIZE);
+		//printf("buffer : %s          ->          ", buffer);
+		if (bytes == -1)
+			return (NULL);
+		buffer[bytes] = '\0';
+		line = strjoin_free(line, buffer);
+		//printf("line : %s\n", line);
+		if (ft_strchr(line, '\n') != NULL)
+			return (line);
 	}
-	if (bytes == -1)
-		return (NULL);
-	else
-	{
-		rest = get_rest(buffer);
-		line = ft_strjoin(line, get_rest(rest));
-		free(rest);
-	}
-	return (line);
+	return (NULL);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer;
-	char		*line;
+	static char *buffer;
+	char	*line;
+
 	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
 		return (NULL);
+	buffer = line_creator(fd, buffer);
 	if (buffer == NULL)
-		buffer = ft_calloc(BUFFER_SIZE + 1, 1);
-	line = ft_calloc(1, 1);
-	if (buffer == NULL || line == NULL)
 		return (NULL);
-	line = fill_line(fd, line, buffer);
-	if (line == NULL)
-	{
-		free(line);
-		free(buffer);
-		return (NULL);
-	}
+	line = line_trimmer(buffer);
+	buffer = line_rest(buffer);
 	return (line);
 }
+
+int main()
+{
+	int fd = open("test.txt", O_RDONLY);
+	char *line;
+	line = get_next_line(fd);
+	printf("%s", line);
+	line = get_next_line(fd);
+	printf("%s", line);
+	return (0);
+}
+

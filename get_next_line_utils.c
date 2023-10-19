@@ -6,14 +6,14 @@
 /*   By: haroldsorel <marvin@42.fr>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/12 19:50:47 by haroldsorel       #+#    #+#             */
-/*   Updated: 2023/10/14 01:00:34 by haroldsorel      ###   ########.fr       */
+/*   Updated: 2023/10/19 01:29:00 by haroldsorel      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "get_next_line.h"
 
 size_t	ft_strlen(const char *str)
 {
-	int	count;
+	size_t	count;
 
 	count = 0;
 	while (str[count] != '\0')
@@ -48,7 +48,6 @@ char	*ft_strjoin(char const *s1, char const *s2)
 		j++;
 	}
 	res[sizetotal] = 0;
-	free((void *)s1);
 	return (res);
 }
 
