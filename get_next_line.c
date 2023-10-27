@@ -5,26 +5,11 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: haroldsorel <marvin@42.fr>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/19 00:01:55 by haroldsorel       #+#    #+#             */
-/*   Updated: 2023/10/19 02:25:15 by haroldsorel      ###   ########.fr       */
+/*   Created: 2023/10/20 16:02:11 by haroldsorel       #+#    #+#             */
+/*   Updated: 2023/10/27 15:31:55 by haroldsorel      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "get_next_line.h"
-
-int	find_nl(char *str)
-{
-	int	i;
-
-	i = 0;
-	while (str[i] != '\0')
-	{
-		if (str[i] == '\n')
-			return (i);
-		i++;
-	}
-	return (-1);
-}
-
 
 char	*strjoin_free(char *line, char *buffer)
 {
@@ -33,107 +18,166 @@ char	*strjoin_free(char *line, char *buffer)
 	temp = line;
 	line = ft_strjoin(line, buffer);
 	if (line == NULL)
+	{
+		free(temp);
 		return (NULL);
+	}
 	free(temp);
 	return (line);
 }
 
-
-char	*line_rest(char *buffer)
-{
-	int		i;
-	int		j;
-	char	*line;
-
-	i = 0;
-	while (buffer[i] && buffer[i] != '\n')
-		i++;
-	if (!buffer[i])
-	{
-		free(buffer);
-		return (NULL);
-	}
-	line = ft_calloc((ft_strlen(buffer) - i + 1), sizeof(char));
-	i++;
-	j = 0;
-	while (buffer[i])
-		line[j++] = buffer[i++];
-	free(buffer);
-	return (line);	
-}
-
 char	*line_trimmer(char *line)
 {
+	int	nl_index;
+	int	i;
 	char	*res;
-	int		nl_index;
-	int		i;
-
+	
 	nl_index = find_nl(line);
 	i = 0;
 	if (nl_index == -1)
-		return (line);
-	res = malloc(nl_index + 2);
-	while (i <= nl_index)
 	{
-		res[i] = line[i];
-		i++;
+		res = malloc(ft_strlen(line) + 1);
+		if (res == NULL)
+			return (NULL);
+		while (line[i] != '\0')
+		{
+			res[i] = line[i];
+			i++;
+		}
+	}
+	else
+	{
+		res = malloc(nl_index + 2);
+		if (res == NULL)
+			return (NULL);
+		while (i <= nl_index)
+		{
+			res[i] = line[i];
+			i++;
+		}
 	}
 	res[i] = '\0';
 	return (res);
 }
 
-
-char	*line_creator(int fd, char *line)
+char	*line_after(char *line)
 {
-	char	buffer[BUFFER_SIZE + 1];
-	int	bytes;
+	int	nl_index;
+	int	i;
+	char	*res;
 
-	bytes = 1;
-	if (line == NULL)
+	nl_index = find_nl(line);
+	i = 0;
+	if (nl_index == -1)
 	{
-		line = malloc(1);
-		if (line == NULL)
+		res = malloc(1);
+		if (res == NULL)
 			return (NULL);
-		line[0] = '\0';
 	}
-	while (bytes != 0)
+	else
 	{
-		bytes = read(fd, buffer, BUFFER_SIZE);
-		//printf("buffer : %s          ->          ", buffer);
-		if (bytes == -1)
+		res = malloc(ft_strlen(line) - nl_index);
+		if (res == NULL)
 			return (NULL);
+		while (line[nl_index + 1 + i] != '\0')
+		{
+			res[i] = line[nl_index + 1 + i];
+			i++;
+		}
+	}
+	res[i] = '\0';
+	return(res);
+}
+
+char	*line_creator(int fd, char *rest)
+{
+	int			bytes;
+	char		*line;
+	char		buffer[BUFFER_SIZE + 1];
+
+	if (rest == NULL)
+		line = ft_strjoin("", "");
+	else
+		line = ft_strjoin(rest, "");
+	if (line == NULL)
+		return (NULL);
+	bytes = 1;
+	while (bytes !=  0)
+	{
+		if (find_nl(line) != -1)
+			break ;
+		bytes = read(fd, buffer, BUFFER_SIZE);
+		if (bytes == -1)
+			return (free_utils(line, NULL, 2));
 		buffer[bytes] = '\0';
 		line = strjoin_free(line, buffer);
-		//printf("line : %s\n", line);
-		if (ft_strchr(line, '\n') != NULL)
-			return (line);
+		if (line == NULL)
+			return (NULL);
 	}
-	return (NULL);
+	if (line[0] == '\0')
+		return(free_utils(line, NULL, 2));
+	return (line);
 }
 
 char	*get_next_line(int fd)
 {
-	static char *buffer;
-	char	*line;
+	static char	rest[BUFFER_SIZE + 1];
+	char		*line;
+	char		*return_line;
+	char		*temp;
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+	if (fd < 0 || fd >= OPEN_MAX || BUFFER_SIZE <= 0)
 		return (NULL);
-	buffer = line_creator(fd, buffer);
-	if (buffer == NULL)
+	line = line_creator(fd, rest);
+	if (line == NULL)
+	{
+		rest[0] = '\0'; 
 		return (NULL);
-	line = line_trimmer(buffer);
-	buffer = line_rest(buffer);
-	return (line);
+	}
+	return_line = line_trimmer(line);
+	if (return_line == NULL)
+	{
+		free(line);
+		return (NULL);
+	}
+	temp = line_after(line);
+	if (temp == NULL)
+	{
+		free(line);
+		free(return_line);
+		return (NULL);
+	}
+	free_utils(rest, temp, 1);
+	free(line);
+	return (return_line);
 }
-
+/*
 int main()
 {
-	int fd = open("test.txt", O_RDONLY);
+	int fd = open("empty.txt", O_RDONLY);
 	char *line;
-	line = get_next_line(fd);
-	printf("%s", line);
-	line = get_next_line(fd);
-	printf("%s", line);
+	int i = 1;
+	while ((line = get_next_line(fd)) != NULL)
+	{
+		printf(" Sentence %d :%s\n\n", i, line);
+		i++;
+	}
 	return (0);
 }
-
+*/
+/*
+int main(void)
+{
+	int fd = open("empty.txt", O_RDONLY);
+	char *line;
+	line = get_next_line(fd);
+	printf("%s//", line);
+	//line = get_next_line(fd);
+	//printf("%s//", line);
+	//line = get_next_line(fd);
+	//printf("%s//", line);
+	//line = get_next_line(fd);
+	//printf("%s//", line);
+	return (0);
+}
+*/

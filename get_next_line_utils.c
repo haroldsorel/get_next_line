@@ -6,7 +6,7 @@
 /*   By: haroldsorel <marvin@42.fr>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/12 19:50:47 by haroldsorel       #+#    #+#             */
-/*   Updated: 2023/10/19 01:29:00 by haroldsorel      ###   ########.fr       */
+/*   Updated: 2023/10/27 15:02:30 by haroldsorel      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "get_next_line.h"
@@ -21,6 +21,22 @@ size_t	ft_strlen(const char *str)
 		count++;
 	}
 	return (count);
+}
+
+int	find_nl(char *str)
+{
+	int	i;
+
+	i = 0;
+	if (str == NULL)
+		return (-1);
+	while (str[i] != '\0')
+	{
+		if (str[i] == '\n')
+			return (i);
+		i++;
+	}
+	return (-1);
 }
 
 char	*ft_strjoin(char const *s1, char const *s2)
@@ -51,50 +67,38 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	return (res);
 }
 
-void	*ft_calloc(size_t count, size_t size)
+char    *free_utils(char *dest, char *src, int flag)
 {
-	void	*ptr;
-	size_t	i;
+	if (flag == 1)
+	{
+		ft_strlcpy(dest, src, BUFFER_SIZE + 1);
+		free(src);
+	}
 
-	ptr = malloc(count * size);
-	i = 0;
-	if (ptr == NULL)
+	if (flag == 2)
 	{
-		return (NULL);
-	}
-	while (i < count * size)
-	{
-		*(unsigned char *)(ptr + i) = 0;
-		i++;
-	}
-	return (ptr);
-}
-
-char	*ft_strchr(const char *str, int c)
-{
-	while (*str != '\0')
-	{
-		if (*str == (char)c)
-		{
-			return ((char *)str);
-		}
-		str++;
-	}
-	if (*str == (char)c)
-	{
-		return ((char *)str);
+		src = NULL;
+		free(dest);
 	}
 	return (NULL);
 }
 
-void	ft_bzero(void *ptr, size_t n)
+size_t	ft_strlcpy(char *dst, const char *src, size_t dstsize)
 {
 	size_t	i;
+	size_t	src_len;
 
 	i = 0;
-	while (i < n)
+	src_len = ft_strlen(src);
+	if (dstsize == 0)
 	{
-		*((unsigned char *)(ptr + i)) = 0;
+		return (src_len);
+	}
+	while (src[i] != '\0' && i < dstsize - 1)
+	{
+		dst[i] = src[i];
 		i++;
 	}
+	dst[i] = '\0';
+	return (src_len);
 }
