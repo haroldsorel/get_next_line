@@ -6,7 +6,7 @@
 /*   By: haroldsorel <marvin@42.fr>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/12 19:50:47 by haroldsorel       #+#    #+#             */
-/*   Updated: 2023/10/27 15:02:30 by haroldsorel      ###   ########.fr       */
+/*   Updated: 2023/10/29 20:56:44 by haroldsorel      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "get_next_line.h"
@@ -67,18 +67,22 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	return (res);
 }
 
-char    *free_utils(char *dest, char *src, int flag)
+char	*free_utils(char *dest, char *src, int flag)
 {
 	if (flag == 1)
 	{
 		ft_strlcpy(dest, src, BUFFER_SIZE + 1);
 		free(src);
 	}
-
-	if (flag == 2)
+	else if (flag == 2)
 	{
 		src = NULL;
 		free(dest);
+	}
+	else if (flag == 3)
+	{
+		free(dest);
+		free(src);
 	}
 	return (NULL);
 }

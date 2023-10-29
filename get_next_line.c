@@ -6,7 +6,7 @@
 /*   By: haroldsorel <marvin@42.fr>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/20 16:02:11 by haroldsorel       #+#    #+#             */
-/*   Updated: 2023/10/27 15:31:55 by haroldsorel      ###   ########.fr       */
+/*   Updated: 2023/10/29 20:55:11 by haroldsorel      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "get_next_line.h"
@@ -28,10 +28,10 @@ char	*strjoin_free(char *line, char *buffer)
 
 char	*line_trimmer(char *line)
 {
-	int	nl_index;
-	int	i;
+	int		nl_index;
+	int		i;
 	char	*res;
-	
+
 	nl_index = find_nl(line);
 	i = 0;
 	if (nl_index == -1)
@@ -62,8 +62,8 @@ char	*line_trimmer(char *line)
 
 char	*line_after(char *line)
 {
-	int	nl_index;
-	int	i;
+	int		nl_index;
+	int		i;
 	char	*res;
 
 	nl_index = find_nl(line);
@@ -86,7 +86,7 @@ char	*line_after(char *line)
 		}
 	}
 	res[i] = '\0';
-	return(res);
+	return (res);
 }
 
 char	*line_creator(int fd, char *rest)
@@ -102,7 +102,7 @@ char	*line_creator(int fd, char *rest)
 	if (line == NULL)
 		return (NULL);
 	bytes = 1;
-	while (bytes !=  0)
+	while (bytes != 0)
 	{
 		if (find_nl(line) != -1)
 			break ;
@@ -115,7 +115,7 @@ char	*line_creator(int fd, char *rest)
 			return (NULL);
 	}
 	if (line[0] == '\0')
-		return(free_utils(line, NULL, 2));
+		return (free_utils(line, NULL, 2));
 	return (line);
 }
 
@@ -131,22 +131,15 @@ char	*get_next_line(int fd)
 	line = line_creator(fd, rest);
 	if (line == NULL)
 	{
-		rest[0] = '\0'; 
+		rest[0] = '\0';
 		return (NULL);
 	}
 	return_line = line_trimmer(line);
 	if (return_line == NULL)
-	{
-		free(line);
-		return (NULL);
-	}
+		return (free_utils(line, NULL, 2));
 	temp = line_after(line);
 	if (temp == NULL)
-	{
-		free(line);
-		free(return_line);
-		return (NULL);
-	}
+		return (free_utils(line, return_line, 3));
 	free_utils(rest, temp, 1);
 	free(line);
 	return (return_line);
