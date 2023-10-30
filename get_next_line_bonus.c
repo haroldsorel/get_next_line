@@ -1,15 +1,15 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: haroldsorel <marvin@42.fr>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/20 16:02:11 by haroldsorel       #+#    #+#             */
-/*   Updated: 2023/10/30 15:16:41 by haroldsorel      ###   ########.fr       */
+/*   Created: 2023/10/30 13:43:37 by haroldsorel       #+#    #+#             */
+/*   Updated: 2023/10/30 15:17:35 by haroldsorel      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 char	*strjoin_free(char *line, char *buffer)
 {
@@ -109,17 +109,17 @@ char	*line_creator(int fd, char *rest)
 
 char	*get_next_line(int fd)
 {
-	static char	rest[BUFFER_SIZE + 1];
+	static char	rest[100][BUFFER_SIZE + 1];
 	char		*line;
 	char		*return_line;
 	char		*temp;
 
-	if (fd < 0 || fd > OPEN_MAX || BUFFER_SIZE <= 0)
+	if (fd < 0 || fd >= OPEN_MAX || BUFFER_SIZE <= 0 || fd > 99)
 		return (NULL);
-	line = line_creator(fd, rest);
+	line = line_creator(fd, rest[fd]);
 	if (line == NULL)
 	{
-		rest[0] = '\0';
+		rest[fd][0] = '\0';
 		return (NULL);
 	}
 	if (line[0] == '\0')
@@ -130,37 +130,7 @@ char	*get_next_line(int fd)
 	temp = line_after(line);
 	if (temp == NULL)
 		return (free_utils(line, return_line, 3));
-	free_utils(rest, temp, 1);
+	free_utils(rest[fd], temp, 1);
 	free(line);
 	return (return_line);
 }
-/*
-int main()
-{
-	int fd = open("empty.txt", O_RDONLY);
-	char *line;
-	int i = 1;
-	while ((line = get_next_line(fd)) != NULL)
-	{
-		printf(" Sentence %d :%s\n\n", i, line);
-		i++;
-	}
-	return (0);
-}
-*/
-/*
-int main(void)
-{
-	int fd = open("empty.txt", O_RDONLY);
-	char *line;
-	line = get_next_line(fd);
-	printf("%s//", line);
-	//line = get_next_line(fd);
-	//printf("%s//", line);
-	//line = get_next_line(fd);
-	//printf("%s//", line);
-	//line = get_next_line(fd);
-	//printf("%s//", line);
-	return (0);
-}
-*/
