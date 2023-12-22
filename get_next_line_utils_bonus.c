@@ -6,7 +6,7 @@
 /*   By: haroldsorel <marvin@42.fr>                 +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 13:48:34 by haroldsorel       #+#    #+#             */
-/*   Updated: 2023/10/30 13:49:12 by haroldsorel      ###   ########.fr       */
+/*   Updated: 2023/12/22 16:31:23 by hsorel           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "get_next_line_bonus.h"
@@ -83,6 +83,13 @@ char	*free_utils(char *dest, char *src, int flag)
 	{
 		free(dest);
 		free(src);
+	}
+	else if (flag == 4)
+	{
+		if (src == NULL)
+			return (ft_strjoin("", ""));
+		else
+			return (ft_strjoin(src, ""));
 	}
 	return (NULL);
 }
